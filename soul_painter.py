@@ -39,7 +39,9 @@ class SoulPainter:
         self.workflow_path = workflow_path
         load_dotenv()
 
-    def generate_prompt(self, subject: str, model: str = "gemini-2.5-flash") -> str:
+    def generate_prompt(
+        self, subject: str, extra_prompt: str = "", model: str = "gemini-2.5-flash"
+    ) -> str:
         """
         调用gemini生成prompt
         """
@@ -58,6 +60,8 @@ class SoulPainter:
         )
         chain = template | llm | StrOutputParser()
         prompt = chain.invoke({"subject": subject})
+        if extra_prompt:
+            prompt = f"{prompt}, {extra_prompt}"
         return prompt
 
     def draw(self, prompt: str, output_dir: str = "./images/") -> Optional[str]:
@@ -142,8 +146,9 @@ class SoulPainter:
 if __name__ == "__main__":
     painter = SoulPainter("192.168.31.128", 8188, "./comfyUI.json")
     subject = "湖中落日"
+    extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime"
     print("正在构思prompt")
-    prompt = painter.generate_prompt(subject)
+    prompt = painter.generate_prompt(subject, extra_prompt=extra_prompt)
     print(prompt)
     print("*" * 50)
     print("正在绘图")
