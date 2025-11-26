@@ -68,10 +68,7 @@ class SoulPainter:
         """
         调用comfyUI在服务器生成图像，并下载回本地
         """
-        os.makedirs(output_dir, exist_ok=True)
-
-        with open(self.workflow_path, "r", encoding="utf-8") as f:
-            comfyui_frame = json.load(f)
+        comfyui_frame = self._open_comfyUI_api(output_dir)
 
         comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
         comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
@@ -83,9 +80,7 @@ class SoulPainter:
         ws_url = f"ws://{self.comfyui_addr}/ws?clientId={client_id}"
         ws.connect(ws_url)
 
-        url = f"http://{self.comfyui_addr}/prompt"
-        payload = comfyui_frame
-        response = requests.post(url, json=payload)
+        response = self._comfyUI_post(comfyui_frame=comfyui_frame)
 
         image_name = None
 
@@ -96,28 +91,12 @@ class SoulPainter:
                 out = ws.recv()
                 if isinstance(out, str):
                     message = json.loads(out)
-                    msg_type = message["type"]
-                    # print(f"收到消息，消息类型：{message['type']}")
-                    if msg_type == "status":
-                        print(
-                            f"队列还有{message['data']['status']['exec_info']['queue_remaining']}未画"
-                        )
-                    elif msg_type == "execution_start":
-                        print("开始绘画")
-                    elif msg_type == "executing":
-                        node = message["data"]["node"]
-                        node_type = comfyui_frame["prompt"][node]["class_type"]
-                        print(f"正在执行节点{node_type}")
-                    elif msg_type == "progress":
-                        current_step = message["data"]["value"]
-                        max_steps = message["data"]["max"]
-                        print(f"进度：{current_step/max_steps}")
-                    elif msg_type == "executed":
-                        image_node = message["data"]["output"]
-                        if "images" in image_node:
-                            image_name = image_node["images"][0]["filename"]
-                    elif msg_type == "execution_success":
-                        print("绘图完成")
+                    end, image_name = self._message_type(
+                        message=message,
+                        comfyui_frame=comfyui_frame,
+                        image_name=image_name,
+                    )
+                    if end:
                         break
         else:
             print(f"任务提交失败，{response.status_code}")
@@ -139,6 +118,49 @@ class SoulPainter:
         except NameError:
             print("未获取到图片名称")
             return None
+
+    def _open_comfyUI_api(self, output_dir: str) -> dict:
+        """将下载下来的节点api打开"""
+        os.makedirs(output_dir, exist_ok=True)
+        with open(self.workflow_path, "r", encoding="utf-8") as f:
+            comfyui_frame = json.load(f)
+
+        return comfyui_frame
+
+    def _comfyUI_post(self, comfyui_frame: dict) -> requests.Response:
+        """像comfyUI发送post请求，开始绘图"""
+        url = f"http://{self.comfyui_addr}/prompt"
+
+        payload = comfyui_frame
+        response = requests.post(url, json=payload)
+
+        return response
+
+    def _message_type(self, message, comfyui_frame, image_name) -> tuple[bool, str]:
+        """处理ws的信息"""
+        msg_type = message["type"]  # print(f"收到消息，消息类型：{message['type']}")
+        if msg_type == "status":
+            print(
+                f"队列还有{message['data']['status']['exec_info']['queue_remaining']}未画"
+            )
+        elif msg_type == "execution_start":
+            print("开始绘画")
+        elif msg_type == "executing":
+            node = message["data"]["node"]
+            node_type = comfyui_frame["prompt"][node]["class_type"]
+            print(f"正在执行节点{node_type}")
+        elif msg_type == "progress":
+            current_step = message["data"]["value"]
+            max_steps = message["data"]["max"]
+            print(f"进度：{current_step/max_steps}")
+        elif msg_type == "executed":
+            image_node = message["data"]["output"]
+            if "images" in image_node:
+                image_name = image_node["images"][0]["filename"]
+        elif msg_type == "execution_success":
+            print("绘图完成")
+            return True, image_name
+        return False, image_name
 
 
 if __name__ == "__main__":
