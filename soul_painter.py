@@ -101,7 +101,9 @@ class SoulPainter:
                     elif msg_type == "execution_start":
                         print("开始绘画")
                     elif msg_type == "executing":
-                        print(f"正在执行节点{message['data']['node']}")
+                        node = message["data"]["node"]
+                        node_type = comfyui_frame["prompt"][node]["class_type"]
+                        print(f"正在执行节点{node_type}")
                     elif msg_type == "progress":
                         current_step = message["data"]["value"]
                         max_steps = message["data"]["max"]
