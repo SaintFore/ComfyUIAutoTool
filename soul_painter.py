@@ -68,7 +68,8 @@ class SoulPainter:
         """
         调用comfyUI在服务器生成图像，并下载回本地
         """
-        comfyui_frame = self._open_comfyUI_api(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        comfyui_frame = self._open_comfyUI_api()
 
         comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
         comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
@@ -119,9 +120,8 @@ class SoulPainter:
             print("未获取到图片名称")
             return None
 
-    def _open_comfyUI_api(self, output_dir: str) -> dict:
+    def _open_comfyUI_api(self) -> dict:
         """将下载下来的节点api打开"""
-        os.makedirs(output_dir, exist_ok=True)
         with open(self.workflow_path, "r", encoding="utf-8") as f:
             comfyui_frame = json.load(f)
 
