@@ -123,14 +123,12 @@ class SoulPainter:
             print(f"任务提交失败，{response.status_code}")
         ws.close()
 
-        images_dir = "./images/"
-
         try:
             if image_name:
                 download_url = (
                     f"http://{self.comfyui_addr}/view?filename={image_name}&type=output"
                 )
-                save_path = os.path.join(images_dir, image_name)
+                save_path = os.path.join(output_dir, image_name)
                 print(f"正在下载图片：{image_name}")
                 with requests.get(download_url) as r:
                     print(r)
