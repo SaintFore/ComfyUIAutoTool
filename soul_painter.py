@@ -139,26 +139,26 @@ class SoulPainter:
     def _message_type(self, message, comfyui_frame, image_name) -> tuple[bool, str]:
         """处理ws的信息"""
         msg_type = message["type"]  # print(f"收到消息，消息类型：{message['type']}")
-        if msg_type == "status":
-            print(
-                f"队列还有{message['data']['status']['exec_info']['queue_remaining']}未画"
-            )
-        elif msg_type == "execution_start":
+        # if msg_type == "status":
+        #     print(
+        #         f"队列还有{message['data']['status']['exec_info']['queue_remaining']}未画"
+        #     )
+        if msg_type == "execution_start":
             print("开始绘画")
         elif msg_type == "executing":
             node = message["data"]["node"]
             node_type = comfyui_frame["prompt"][node]["class_type"]
-            print(f"正在执行节点{node_type}")
+            print(f"\r正在执行节点{node_type}", end="", flush=True)
         elif msg_type == "progress":
             current_step = message["data"]["value"]
             max_steps = message["data"]["max"]
-            print(f"进度：{current_step/max_steps}")
+            print(f"\r进度：{current_step/max_steps}", end=" ", flush=True)
         elif msg_type == "executed":
             image_node = message["data"]["output"]
             if "images" in image_node:
                 image_name = image_node["images"][0]["filename"]
         elif msg_type == "execution_success":
-            print("绘图完成")
+            print("\n绘图完成")
             return True, image_name
         return False, image_name
 
