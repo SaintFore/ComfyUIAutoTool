@@ -1,8 +1,11 @@
 import argparse
+from datetime import datetime
 from soul_painter import SoulPainter
 
 
 def main():
+    start = datetime.now()
+
     parser = argparse.ArgumentParser(description="SoulPainter - AI批量绘图")
 
     parser.add_argument("--ip", type=str, default="192.168.31.128", help="ComfyUI地址")
@@ -24,7 +27,7 @@ def main():
     elif args.subject:
         ideas = [args.subject]
 
-    extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime"
+    extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime, "
 
     if len(ideas):
         print(f"发现{len(ideas)}个创意，开始批量生产")
@@ -36,13 +39,21 @@ def main():
                 prompt = painter.generate_prompt(idea, extra_prompt=extra_prompt)
                 # print(prompt)
                 # todo save prompt
-                save_name = painter.draw(prompt, output_dir=args.out)
-                if save_name:
-                    print(f"文件{save_name}已保存在{args.out}文件夹下")
+                save_path = painter.draw(prompt, output_dir=args.out)
+
+                if save_path:
+                    prompt_file = save_path[:-4] + ".txt"
+                    print(prompt_file)
+                    with open(prompt_file, "w") as f:
+                        f.write(prompt)
+                    print(f"文件 {save_path} 已保存在{args.out}文件夹下")
                 else:
                     print("画图失败")
     else:
         print("先想点想法吧")
+
+    end = datetime.now()
+    print(f"一共用时: {end -start}")
 
 
 if __name__ == "__main__":
