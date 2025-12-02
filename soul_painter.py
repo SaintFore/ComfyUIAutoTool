@@ -35,8 +35,8 @@ class SoulPainter:
         """
         self.comfyui_ip = comfyui_ip
         self.comfyui_port = comfyui_port
-        self.comfyui_addr = f"{comfyui_ip}:{comfyui_port}"
         self.workflow_path = workflow_path
+        self.comfyui_addr = f"{comfyui_ip}:{comfyui_port}"
         load_dotenv()
 
     def generate_prompt(
@@ -69,19 +69,19 @@ class SoulPainter:
         调用comfyUI在服务器生成图像，并下载回本地
         """
         os.makedirs(output_dir, exist_ok=True)
-        comfyui_frame = self._open_comfyUI_api()
+        self.comfyui_frame = self._open_comfyUI_api()
 
-        comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
-        comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
+        self.comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
+        self.comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
 
         client_id = str(uuid.uuid4())
-        comfyui_frame["client_id"] = client_id
+        self.comfyui_frame["client_id"] = client_id
 
         ws = websocket.WebSocket()
         ws_url = f"ws://{self.comfyui_addr}/ws?clientId={client_id}"
         ws.connect(ws_url)
 
-        response = self._comfyUI_post(comfyui_frame=comfyui_frame)
+        response = self._comfyUI_post()
 
         image_name = None
 
@@ -94,7 +94,6 @@ class SoulPainter:
                     message = json.loads(out)
                     end, image_name = self._message_type(
                         message=message,
-                        comfyui_frame=comfyui_frame,
                         image_name=image_name,
                     )
                     if end:
@@ -127,16 +126,16 @@ class SoulPainter:
 
         return comfyui_frame
 
-    def _comfyUI_post(self, comfyui_frame: dict) -> requests.Response:
+    def _comfyUI_post(self) -> requests.Response:
         """像comfyUI发送post请求，开始绘图"""
         url = f"http://{self.comfyui_addr}/prompt"
 
-        payload = comfyui_frame
+        payload = self.comfyui_frame
         response = requests.post(url, json=payload)
 
         return response
 
-    def _message_type(self, message, comfyui_frame, image_name) -> tuple[bool, str]:
+    def _message_type(self, message, image_name) -> tuple[bool, str]:
         """处理ws的信息"""
         msg_type = message["type"]  # print(f"收到消息，消息类型：{message['type']}")
         # if msg_type == "status":
@@ -147,7 +146,7 @@ class SoulPainter:
             print("开始绘画")
         elif msg_type == "executing":
             node = message["data"]["node"]
-            node_type = comfyui_frame["prompt"][node]["class_type"]
+            node_type = self.comfyui_frame["prompt"][node]["class_type"]
             print(f"\r正在执行节点{node_type}", end="", flush=True)
         elif msg_type == "progress":
             current_step = message["data"]["value"]
