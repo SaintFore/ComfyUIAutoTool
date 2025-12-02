@@ -69,13 +69,7 @@ class SoulPainter:
         调用comfyUI在服务器生成图像，并下载回本地
         """
         os.makedirs(output_dir, exist_ok=True)
-        self.comfyui_frame = self._open_comfyUI_api()
-
-        self.comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
-        self.comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
-
-        client_id = str(uuid.uuid4())
-        self.comfyui_frame["client_id"] = client_id
+        client_id = self._set_comfyUI_api(prompt=prompt)
 
         ws = websocket.WebSocket()
         ws_url = f"ws://{self.comfyui_addr}/ws?clientId={client_id}"
@@ -118,6 +112,15 @@ class SoulPainter:
         except NameError:
             print("未获取到图片名称")
             return None
+
+    def _set_comfyUI_api(self, prompt) -> str:
+        """设置comfyui的节点，正向提示词，seed与client_id"""
+        self.comfyui_frame = self._open_comfyUI_api()
+        self.comfyui_frame["prompt"]["3"]["inputs"]["text"] = prompt
+        self.comfyui_frame["prompt"]["5"]["inputs"]["seed"] = random.randint(1, 10**15)
+        client_id = str(uuid.uuid4())
+        self.comfyui_frame["client_id"] = client_id
+        return client_id
 
     def _open_comfyUI_api(self) -> dict:
         """将下载下来的节点api打开"""
