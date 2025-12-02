@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 from soul_painter import SoulPainter
+from pathlib import Path
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
     parser.add_argument("--batch", type=int, default=1, help="每个想法绘制张数")
     parser.add_argument("--out", type=str, default="./images/", help="图像输出目录")
 
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group()
     group.add_argument("--file", type=str, help="创意列表文件路径 (.txt)")
     group.add_argument("--subject", type=str, help="直接输入单个创意主题")
 
@@ -20,12 +21,18 @@ def main():
 
     painter = SoulPainter(args.ip, 8188, "./comfyUI.json")
 
+    default_idea_file = Path("idea.txt")
+
     ideas = []
     if args.file:
         with open(args.file, "r", encoding="utf-8") as f:
             ideas = [line.strip() for line in f.readlines() if line.strip()]
     elif args.subject:
         ideas = [args.subject]
+    else:
+        default_idea_file.touch()
+        ideas_lines = default_idea_file.read_text(encoding="utf-8").splitlines()
+        ideas = [line.strip() for line in ideas_lines if line.strip()]
 
     extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime, "
 
