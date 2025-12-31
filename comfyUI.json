@@ -2,7 +2,7 @@
   "prompt": {
     "1": {
       "inputs": {
-        "ckpt_name": "oneObsession_v18.safetensors"
+        "ckpt_name": "oneObsession_v19.safetensors"
       },
       "class_type": "CheckpointLoaderSimple",
       "_meta": {

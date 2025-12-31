@@ -13,7 +13,9 @@ import uuid
 import websocket
 from typing import Optional
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+
+# from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_deepseek import ChatDeepSeek
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
@@ -40,12 +42,12 @@ class SoulPainter:
         load_dotenv()
 
     def generate_prompt(
-        self, subject: str, extra_prompt: str = "", model: str = "gemini-2.5-flash"
+        self, subject: str, extra_prompt: str = "", model: str = "deepseek-chat"
     ) -> str:
         """
         调用gemini生成prompt
         """
-        llm = ChatGoogleGenerativeAI(model=model)
+        llm = ChatDeepSeek(model=model)
         template = PromptTemplate.from_template(
             """
             你是一个资深的 Stable Diffusion/ComfyUI 提示词专家。

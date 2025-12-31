@@ -9,7 +9,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="SoulPainter - AI批量绘图")
 
-    parser.add_argument("--ip", type=str, default="192.168.31.128", help="ComfyUI地址")
+    parser.add_argument("--ip", type=str, default="192.168.31.61", help="ComfyUI地址")
     parser.add_argument("--batch", type=int, default=1, help="每个想法绘制张数")
     parser.add_argument("--out", type=str, default="./images/", help="图像输出目录")
 
@@ -34,7 +34,7 @@ def main():
         ideas_lines = default_idea_file.read_text(encoding="utf-8").splitlines()
         ideas = [line.strip() for line in ideas_lines if line.strip()]
 
-    extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime, "
+    extra_prompt = "masterpiece, best quality, amazing quality, very awa,absurdres,newest,very aesthetic,depth of field, highres, (chiaroscuro,high contrast:0.5),(sunbeam), Nijimixa2nime,"
 
     if len(ideas):
         print(f"发现{len(ideas)}个创意，开始批量生产")
