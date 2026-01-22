@@ -103,7 +103,7 @@
     },
     "16": {
       "inputs": {
-        "filename_prefix": "SoulPainter",
+        "filename_prefix": "NewTry",
         "images": ["7", 0]
       },
       "class_type": "SaveImage",
